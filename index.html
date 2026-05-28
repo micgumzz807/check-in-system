@@ -103,10 +103,23 @@
       }
 
       function sendData(pos) {
-        // นำตัวแปร shift ออกไป เนื่องจากไม่ได้ใช้ในหน้านี้แล้ว
-        let finalUrl = `${GAS_URL}?userId=${encodeURIComponent(userLineId)}&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&type=${actionType}&t=${new Date().getTime()}`;
+        // สร้าง Object เก็บข้อมูลที่จะส่ง
+        let payload = {
+          userId: userLineId,
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          type: actionType,
+          t: new Date().getTime()
+        };
         
-        fetch(finalUrl, { method: 'GET' })
+        fetch(GAS_URL, { 
+          method: 'POST',
+          headers: {
+            // ใช้ text/plain เพื่อป้องกันปัญหา CORS Preflight ใน GAS
+            'Content-Type': 'text/plain;charset=utf-8' 
+          },
+          body: JSON.stringify(payload) // แปลงเป็น JSON String
+        })
         .then(response => response.text())
         .then(data => {
           document.getElementById("loader").style.display = "none";
@@ -120,7 +133,7 @@
         })
         .catch(error => {
           document.getElementById("loader").style.display = "none";
-          updateLog("❌ Network Error: " + error.message);
+          updateLog("❌ Error: " + error.message);
           document.getElementById("btn-group").style.display = "flex";
         });
       }
